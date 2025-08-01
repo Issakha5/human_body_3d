@@ -15,3 +15,5 @@ python manage.py runserver
 ## then move to the frontend repository
 npm install
 npm run dev
+
+## open your browser on localhost:http://localhost:5173/

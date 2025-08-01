@@ -11,7 +11,9 @@ function Model({ url, setSelectedPoint }) {
   }
 
   try {
-    const gltf = useLoader(GLTFLoader, url);
+    const gltf = useLoader(GLTFLoader, url, (loader) => {
+      loader.onError = (error) => console.error('GLTFLoader error:', error);
+    });
     const modelRef = useRef();
 
     const handleClick = (event) => {
@@ -20,7 +22,7 @@ function Model({ url, setSelectedPoint }) {
       setSelectedPoint({ x: point.x, y: point.y, z: point.z });
     };
 
-    console.log('Loaded glTF:', gltf); 
+    console.log('Loaded glTF:', gltf);
     return <primitive ref={modelRef} object={gltf.scene} onClick={handleClick} />;
   } catch (error) {
     console.error('Error in Model component:', error);
@@ -58,7 +60,7 @@ function Canvas3D({ selectedSystem, setSelectedPoint }) {
         return res.json();
       })
       .then((data) => {
-        console.log('API Response:', data); 
+        console.log('API Response:', data);
         if (data.length > 0) {
           const url = `/static/${data[0].model_file.replace(/^\/+/, '')}`;
           console.log('Model URL:', url);
@@ -80,7 +82,13 @@ function Canvas3D({ selectedSystem, setSelectedPoint }) {
 
   return (
     <div className="w-full h-[600px] bg-white shadow-md">
-      <Canvas>
+      <Canvas
+        gl={{ antialias: true, logErrors: true }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0xffffff); // Set background color
+          console.log('WebGL context created:', gl);
+        }}
+      >
         <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={75} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[0, 1, 1]} intensity={0.5} />

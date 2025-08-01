@@ -1,34 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-function Sidebar({ setSelectedSystem }) {
-  const [systems, setSystems] = useState([]);
+const Sidebar = ({ onSelectPart }) => {
+  const [bodyParts, setBodyParts] = useState([]);
 
   useEffect(() => {
     fetch('/api/body-parts/')
-      .then((res) => res.json())
-      .then((data) => {
-        setSystems(data);
-      })
-      .catch((error) => console.error('Erreur lors du chargement des systèmes :', error));
+      .then(res => res.json())
+      .then(setBodyParts)
+      .catch(err => console.error("Erreur fetch body-parts:", err));
   }, []);
 
   return (
-    <div className="w-64 bg-white p-4 shadow-md">
-      <h3 className="text-xl font-bold mb-4">Systèmes corporels</h3>
+    <div className="w-64 bg-white shadow p-4 h-screen overflow-auto">
+      <h2 className="text-xl font-bold mb-4">Systèmes</h2>
       <ul>
-        {systems.map((system) => (
-          <li key={system.id}>
+        {bodyParts.map(part => (
+          <li key={part.id} className="mb-2">
             <button
-              onClick={() => setSelectedSystem(system.id)}
-              className="w-full text-left p-2 hover:bg-gray-200 rounded"
+              onClick={() => onSelectPart(part)}
+              className="text-blue-600 hover:underline"
             >
-              {system.name}
+              {part.name}
             </button>
           </li>
         ))}
       </ul>
     </div>
   );
-}
+};
 
 export default Sidebar;

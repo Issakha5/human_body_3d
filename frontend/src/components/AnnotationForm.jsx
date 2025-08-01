@@ -1,56 +1,80 @@
 import { useState } from 'react';
 
-function AnnotationForm({ selectedPoint, selectedSystem, setSelectedPoint }) {
+const AnnotationForm = ({ onSubmit }) => {
   const [label, setLabel] = useState('');
   const [description, setDescription] = useState('');
+  const [coords, setCoords] = useState({ x: 0, y: 0, z: 0 });
 
-  const handleSubmit = async (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCoords({ ...coords, [name]: parseFloat(value) });
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const response = await fetch('/api/annotations/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        label,
-        description,
-        x: selectedPoint.x,
-        y: selectedPoint.y,
-        z: selectedPoint.z,
-        body_part: 1, // À remplacer par l’ID du body_part approprié
-      }),
-    });
-    if (response.ok) {
-      alert('Annotation enregistrée !');
-      setSelectedPoint(null);
-      setLabel('');
-      setDescription('');
+
+    if (!label.trim()) {
+      alert('Le nom est requis.');
+      return;
     }
+
+    onSubmit({ label, description, ...coords });
+
+    setLabel('');
+    setDescription('');
+    setCoords({ x: 0, y: 0, z: 0 });
   };
 
   return (
-    <div className="mt-4 p-4 bg-white shadow-md rounded">
-      <h3 className="text-lg font-bold mb-2">Ajouter une annotation</h3>
-      <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-2 text-sm">
+      <h3 className="text-base font-semibold">Ajouter une annotation</h3>
+
+      <div>
+        <label className="block">Nom</label>
         <input
           type="text"
+          className="border rounded p-1 w-full"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          placeholder="Nom de l'annotation"
-          className="w-full p-2 mb-2 border rounded"
+          placeholder="Ex: Cœur"
+          required
         />
+      </div>
+
+      <div>
+        <label className="block">Description</label>
         <textarea
+          className="border rounded p-1 w-full"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
-          className="w-full p-2 mb-2 border rounded"
+          placeholder="Ex: Organe vital..."
         />
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Enregistrer
-        </button>
-      </form>
-    </div>
+      </div>
+
+      <div className="flex gap-2">
+        {['x', 'y', 'z'].map((axis) => (
+          <div key={axis}>
+            <label className="block uppercase">{axis}</label>
+            <input
+              type="number"
+              name={axis}
+              step="0.01"
+              className="border rounded p-1 w-20"
+              value={coords[axis]}
+              onChange={handleChange}
+            />
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+      >
+        Ajouter
+      </button>
+    </form>
   );
-}
+};
 
 export default AnnotationForm;
